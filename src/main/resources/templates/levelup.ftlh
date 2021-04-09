@@ -22,7 +22,7 @@
 
 
                     <div class="mb-3">
-                        <label for="exampleInput1" class="form-label"><h5>В какой город отправиться рыцарь для прокачки?</h5></label>
+                        <label for="exampleInput1" class="form-label"><h5>В каком городе рыцарь тренируется?</h5></label>
                         <input type="text" name="trainCity" class="form-control ${(trainCityError??)?string('is-invalid','')}"
                                 id="exampleInput1">
                         <#if trainCityError??>

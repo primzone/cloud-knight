@@ -17,8 +17,6 @@ public class MonsterService {
     MonsterRepository monsterRepository;
 
 
-
-
     public void createNewMonsterForUser(User user){
 
         Optional<Monster> optionalMonster = monsterRepository.findByOwner(user);
@@ -47,29 +45,6 @@ public class MonsterService {
 
         monsterRepository.save(monster);
     }
-
-
-
-    class Solution {
-        public String truncateSentence(String s, int k) {
-
-            String[] strArr = s.split(" ");
-
-          //  List<String> list = Arrays.asList(s.split(" "));
-
-
-
-            StringBuilder otvet = new StringBuilder();
-            otvet.append(strArr[0]);
-            for (int i = 1; i < k ; i++) {
-                otvet.append(" ").append(strArr[i]);
-            }
-
-            return otvet.toString();
-
-        }
-    }
-
 
 
 }

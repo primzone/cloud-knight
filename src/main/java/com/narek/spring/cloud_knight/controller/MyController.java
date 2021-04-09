@@ -4,7 +4,9 @@ import com.narek.spring.cloud_knight.entity.Monster;
 import com.narek.spring.cloud_knight.entity.User;
 import com.narek.spring.cloud_knight.repository.KnightRepository;
 import com.narek.spring.cloud_knight.repository.UserRepository;
+import com.narek.spring.cloud_knight.service.KnightService;
 import com.narek.spring.cloud_knight.service.MonsterService;
+import com.narek.spring.cloud_knight.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -24,6 +26,10 @@ public class MyController {
     private UserRepository userRepository;
     @Autowired
     private MonsterService monsterService;
+    @Autowired
+    private KnightService knightService;
+    @Autowired
+    private UserService userService;
 
 
     @RequestMapping("/")
@@ -47,10 +53,12 @@ public class MyController {
 
 
     @PostMapping("/admin")
-    public String deleteAllKnights(@RequestParam String deleteAllKnights, Map<String, Object> model){
+    public String deleteAllKnights(@RequestParam String deleteAllKnights){
 
         if (deleteAllKnights.equals("delete")){
-            knightRepository.deleteAll();
+            //knightRepository.deleteAll();
+            knightService.deleteAll();
+
         }
         return "admin";
     }
@@ -88,47 +96,48 @@ public class MyController {
             return "createKnight";
 
         }
-        else {
-            Optional<Knight> optionalKnight = knightRepository.findByOwner(user);
 
+        Optional<Knight> optionalKnight = knightService.findByOwner(user);
 
-            //если у юзера еще нет рыцаря то создаем, иначе отправляем сообщение, что он есть
-            if (!optionalKnight.isPresent()){
-                //получаемм данные о погоде
-                Map<String, Double> weatherMap = ControllerUtils.checkInfoOpenweathermap(
-                        knight.getFromCity().replaceAll("\\d", "").toLowerCase());//убираем цифры из за api
-                //если данные есть, то создаем рыцаря
-                if (weatherMap != null && weatherMap.size() != 0){
-                    //Knight knight = new Knight(name,user,fromCity);
-                    knight.setOwner(user);
-
-                    knight.setHp(weatherMap.get("pressure"));
-                    knight.setDef(Math.abs(weatherMap.get("temp")));
-                    knight.setStr(weatherMap.get("humidity"));
-                    knight.setLevel(1);
-
-
-                    user.getUsedCities().add(knight.getFromCity().toLowerCase());
-
-                    knightRepository.save(knight);
-                    userRepository.save(user);
-                    model.addAttribute("knight", knight);
-
-                    //записываем в модель из репозитория и  отправляем в выдачу
-
-                }
-                else {
-                    model.addAttribute("message", "Введеный город не найден, попробуйте другой");
-                    return "createKnight";
-                }
-            }
-            else {
-
-                model.addAttribute("notExist", "У вас уже создан рыцарь");
-            }
-            //Iterable<Knight> allKnights =  knightRepository.findAll();
-           // model.addAttribute("knight", knight);
+        if (optionalKnight.isPresent()){
+            model.addAttribute("notExist", "У вас уже создан рыцарь");
+            return "myknight";
         }
+
+        //если у юзера еще нет рыцаря то создаем, иначе отправляем сообщение, что он есть
+
+        //получаемм данные о погоде
+        Map<String, Double> weatherMap = ControllerUtils.checkInfoOpenweathermap(
+                knight.getFromCity().replaceAll("\\d", "").toLowerCase());//убираем цифры из за api
+        //если данные есть, то создаем рыцаря
+        if (!weatherMap.isEmpty()){
+            //Knight knight = new Knight(name,user,fromCity);
+            knight.setOwner(user);
+
+            knight.setHp(weatherMap.get("pressure"));
+            knight.setDef(Math.abs(weatherMap.get("temp")));
+            knight.setStr(weatherMap.get("humidity"));
+            knight.setLevel(1);
+
+            user.getUsedCities().add(knight.getFromCity().toLowerCase());
+
+            //knightRepository.save(knight);
+            knightService.save(knight);
+            //userRepository.save(user);
+            userService.save(user);
+
+
+            model.addAttribute("knight", knight);
+
+            //записываем в модель из репозитория и  отправляем в выдачу
+        }
+        else {
+            model.addAttribute("message", "Введеный город не найден, попробуйте другой");
+            return "createKnight";
+        }
+
+
+
         System.out.println(user.getUsedCities());
         return "myknight";
 
@@ -138,7 +147,9 @@ public class MyController {
     @GetMapping("levelup")
     public String showLevelUp(@AuthenticationPrincipal User user, Model model){
 
-        Optional<Knight> optionalKnight = knightRepository.findByOwner(user);
+        Optional<Knight> optionalKnight = knightService.findByOwner(user);
+
+
 
         if (optionalKnight.isPresent()){
             model.addAttribute("knight", optionalKnight.get());
@@ -159,51 +170,56 @@ public class MyController {
                                 Model model){
 
         //проверка на действубщего рыцаря
-        Optional<Knight> optionalKnight = knightRepository.findById(knight_id);
-        if (optionalKnight.isPresent()){
-            Knight knight = optionalKnight.get();
-            //проверка длины введеного города
-            if (trainCity.length() < 3){
-                model.addAttribute("trainCityError", "Имя города должно состоять минимум из 3 букв");
-                model.addAttribute("knight", knight);
-            } //проверка на повторно введеные города
-            else  if (user.getUsedCities().contains(trainCity.replaceAll("\\d", "").toLowerCase())){
-                model.addAttribute("cityIsUsed","Вы уже тренировались в этом городе");
-                model.addAttribute("knight", knight);
-            }
-            else {
-                    //получаем данные о погоде в городе
-                    Map<String, Double> weatherMap = ControllerUtils.checkInfoOpenweathermap(trainCity);
-                    //если такой город есть, то добавляем все данные и сохраняем, иначе ошибка
-                    if (weatherMap.size() != 0){
-
-                        knight.setHp(knight.getHp() + (weatherMap.get("pressure") / 10));
-                        knight.setDef(knight.getDef() + (Math.abs(weatherMap.get("temp")) / 10));
-                        knight.setStr(knight.getStr() + (weatherMap.get("humidity") / 10));
-                        knight.setLevel(knight.getLevel() + 1);
-                        user.getUsedCities().add(trainCity.toLowerCase());
+        Optional<Knight> optionalKnight = knightService.findById(knight_id);
 
 
-                        knightRepository.save(knight);
-                        userRepository.save(user);
-
-                        model.addAttribute("traininfo", "Тренировка прошла успешно");
-                        model.addAttribute("addStr", (weatherMap.get("humidity") / 10));
-                        model.addAttribute("addDef", (Math.abs(weatherMap.get("temp")) / 10));
-                        model.addAttribute("addHp", (weatherMap.get("pressure") / 10));
-                        //записываем в модель из репозитория и  отправляем в выдачу
-                    }
-                    else model.addAttribute("cityIsUsed","Информация по городу не найдена");
-                    model.addAttribute("knight", knight);
-
-                }
-                model.addAttribute("usedCities", user.getUsedCities());
-
-            }
-
-        else {
+        if (!optionalKnight.isPresent()){
             model.addAttribute("notExist", "У вас пока нет рыцаря");
+            return "levelup";
         }
+
+
+
+        Knight knight = optionalKnight.get();
+        //проверка длины введеного города
+        if (trainCity.length() < 3){
+            model.addAttribute("trainCityError", "Имя города должно состоять минимум из 3 букв");
+            model.addAttribute("knight", knight);
+        } //проверка на повторно введеные города
+        else  if (user.getUsedCities().contains(trainCity.toLowerCase())){
+            model.addAttribute("cityIsUsed","Вы уже тренировались в этом городе");
+            model.addAttribute("knight", knight);
+        }
+        else {
+            //получаем данные о погоде в городе
+            Map<String, Double> weatherMap = ControllerUtils.checkInfoOpenweathermap(trainCity.replaceAll("\\d", ""));
+            //если такой город есть, то добавляем все данные и сохраняем, иначе ошибка
+            if (!weatherMap.isEmpty()){
+
+                knight.setHp(knight.getHp() + (weatherMap.get("pressure") / 10));
+                knight.setDef(knight.getDef() + (Math.abs(weatherMap.get("temp")) / 10));
+                knight.setStr(knight.getStr() + (weatherMap.get("humidity") / 10));
+                knight.setLevel(knight.getLevel() + 1);
+                user.getUsedCities().add(trainCity.toLowerCase());
+
+
+//                        knightRepository.save(knight);
+//                        userRepository.save(user);
+                knightService.save(knight);
+                userService.save(user);
+
+                model.addAttribute("traininfo", "Тренировка прошла успешно");
+                model.addAttribute("addStr", (weatherMap.get("humidity") / 10));
+                model.addAttribute("addDef", (Math.abs(weatherMap.get("temp")) / 10));
+                model.addAttribute("addHp", (weatherMap.get("pressure") / 10));
+                //записываем в модель из репозитория и  отправляем в выдачу
+            }
+            else model.addAttribute("cityIsUsed","Информация по городу не найдена");
+            model.addAttribute("knight", knight);
+
+        }
+
+        model.addAttribute("usedCities", user.getUsedCities());
 
         System.out.println(user.getUsedCities());
 
@@ -214,7 +230,7 @@ public class MyController {
     @GetMapping("myknight")
     public String showMyKnight(@AuthenticationPrincipal User user, Model model){
 
-        Optional<Knight> optionalKnight = knightRepository.findByOwner(user);
+        Optional<Knight> optionalKnight = knightService.findByOwner(user);
 
         if (optionalKnight.isPresent()){
             model.addAttribute("knight", optionalKnight.get());
@@ -229,7 +245,7 @@ public class MyController {
     @GetMapping("fight")
     public String showFight(@AuthenticationPrincipal User user, Model model){
 
-        Optional<Knight> optionalKnight = knightRepository.findByOwner(user);
+        Optional<Knight> optionalKnight = knightService.findByOwner(user);
 
         if (optionalKnight.isPresent()){
             model.addAttribute("knight", optionalKnight.get());
@@ -250,7 +266,7 @@ public class MyController {
     public String knightAndMosterFight(@AuthenticationPrincipal User user, Model model){
 
         Monster monster = user.getUser_monster();
-        Optional<Knight> optionalKnight = knightRepository.findByOwner(user);
+        Optional<Knight> optionalKnight = knightService.findByOwner(user);
 
         if (optionalKnight.isPresent()){
             Knight knight = optionalKnight.get();
@@ -280,12 +296,14 @@ public class MyController {
     @GetMapping("ratings")
     public String showRatings(Model model){
 
-        Iterable<Knight> allKnights =  knightRepository.findAll();
+
+        Iterable<Knight> allKnights =  knightService.findAll();
 
         List<Knight> list = new ArrayList<>();
         for (Knight k: allKnights){
             list.add(k);
         }
+
         //сортировка по количеству убитых монстров
         list.sort((o1, o2) -> o2.getKilledMonsters() - o1.getKilledMonsters());
 
@@ -300,8 +318,9 @@ public class MyController {
     public String deleteMyKnight(@AuthenticationPrincipal User user, @RequestParam long knight_id, Model model){
 
         user.getUsedCities().clear();
-        knightRepository.deleteById(knight_id);
-        userRepository.save(user);
+
+        knightService.deleteById(knight_id);
+        userService.save(user);
         monsterService.resetMonster(user.getUser_monster());// удаляем текущего монстра и создаем нового
 
 
@@ -310,32 +329,6 @@ public class MyController {
     }
 
 
-
-
-
-
-
-//    @GetMapping("/checkWeather")
-//    public String checkWeather(){
-//
-//        ObjectMapper mapper = new ObjectMapper();
-//        try {
-//            Weather value = mapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
-//                    .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-//                    .readValue(new URL("https://api.openweathermap.org/data/2.5/" +
-//                            "weather?q=Москва&appid=7984a23014928462576b56060f5faadb&units=metric&lang=ru"), Weather.class);
-//
-//            System.out.println(value.getMain());
-//
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//
-//        }
-//
-//
-//
-//        return "admin";
-//    }
 
 
 

@@ -1,8 +1,6 @@
 package com.narek.spring.cloud_knight.entity;
 
-import com.narek.spring.cloud_knight.repository.KnightRepository;
-import com.narek.spring.cloud_knight.repository.UserRepository;
-import com.narek.spring.cloud_knight.service.UserService;
+
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
