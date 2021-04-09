@@ -17,35 +17,24 @@
                 </form>
             </div>
             <div class="col">
-                <form method="post" action="/showAllKnights">
+<#--                <form method="post" action="/showAllKnights">-->
 
-                    <input  type="hidden" name="showAll" value="show">
-                    <input type="hidden" name="_csrf" value="${_csrf.token}">
-                    <button type="submit" class="btn btn-primary">Показать всех рыцарей</button>
+<#--                    <input  type="hidden" name="showAll" value="show">-->
+<#--                    <input type="hidden" name="_csrf" value="${_csrf.token}">-->
+<#--                    <button type="submit" class="btn btn-primary">Показать всех рыцарей</button>-->
 
-                </form>
+<#--                </form>-->
             </div>
             <div class="col">
                 <div class="col">
-                    <form method="get" action="/createKnight">
 
-<#--                        <input  type="hidden" name="createKnight">-->
-                        <input type="hidden" name="_csrf" value="${_csrf.token}">
-                        <button type="submit" class="btn btn-primary">Создать рыцаря</button>
-
-                    </form>
                 </div>
             </div>
         </div>
 
         <div class="row align-items-center">
             <div class="col">
-                <form method="get" action="/checkWeather">
 
-                    <input type="hidden" name="_csrf" value="${_csrf.token}">
-                    <button type="submit" class="btn btn-primary">Узнать погоду</button>
-
-                </form>
             </div>
             <div class="col">
                 <form method="get" action="/user">

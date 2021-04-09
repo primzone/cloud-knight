@@ -14,8 +14,15 @@
     <br>
     <#if !isAuthorized>
         <h3>Для начала создайте пользователя или авторизуйтесь</h3>
+        <#if userCreateMessage??>
+            <br>
+            <div class="alert alert-success" role="alert">
+                ${userCreateMessage}
+            </div>
+        </#if>
         <button onclick="window.location.href = '/login';" type="submit" class="btn btn-primary">Войти</button>
         <button onclick="window.location.href = '/registration';" type="submit" class="btn btn-primary">Регистрация</button>
+
     <#else>
           <p>Вы вошли под пользователем <b>${name}</b></p>
         <br>
@@ -62,7 +69,7 @@
                 <h5 class="mt-0 mb-1">Сражайтесь с монстрами в подземелье</h5>
                 <ul>
                     <li>Каждый монстр увеличивает уровень рыцаря на 1</li>
-                    <li>Каждый следующий монстр сильнее на 20%</li>
+                    <li>Каждый следующий монстр сильнее на 7%</li>
                     <li>Если монстра победить не удалось, вам необходим прокачка</li>
 
                 </ul>
@@ -90,7 +97,8 @@
         <li class="media">
 
             <div class="media-body">
-                <h5 class="mt-0 mb-1">Доска почета</h5>
+                <br>
+                <h5 class="mt-0 mb-1">Рейтинги</h5>
 
                 <ul>
                     <li>Лучшие рыцари будут на самом верху доски почета</li>

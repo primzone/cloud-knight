@@ -1,11 +1,8 @@
 package com.narek.spring.cloud_knight.controller;
-
-
 import com.narek.spring.cloud_knight.entity.Knight;
 import com.narek.spring.cloud_knight.entity.Monster;
 import com.narek.spring.cloud_knight.entity.User;
 import com.narek.spring.cloud_knight.repository.KnightRepository;
-
 import com.narek.spring.cloud_knight.repository.UserRepository;
 import com.narek.spring.cloud_knight.service.MonsterService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +23,7 @@ public class MyController {
     @Autowired
     private UserRepository userRepository;
     @Autowired
-    MonsterService monsterService;
-
+    private MonsterService monsterService;
 
 
     @RequestMapping("/")
@@ -35,40 +31,19 @@ public class MyController {
         return "homepage";
     }
 
-
     @GetMapping("/knights")
-    public String showKnights(Map<String, Object> model){
+    public String showKnights(Model model){
 
         Iterable<Knight> allKnights =  knightRepository.findAll();
-
-
-       model.put("knights", allKnights);
-
+        model.addAttribute("knights", allKnights);
         return "knights";
     }
-
-
-//    @PostMapping("/knights")
-//    public String addKnight(@RequestParam String name, @RequestParam int level, Map<String, Object> model){
-//        //Сначала сохраняем в БД
-//        Knight knight = new Knight(name,level);
-//        knightRepository.save(knight);
-//
-//
-//        //записываем в модель из репозитория и  отправляем в выдачу
-//        Iterable<Knight> allKnights =  knightRepository.findAll();
-//        model.put("knights", allKnights);
-//
-//
-//        return "knights";
-//    }
 
 
     @GetMapping("/admin")
     public String showAdminPage(){
         return "admin";
     }
-
 
 
     @PostMapping("/admin")
@@ -119,8 +94,10 @@ public class MyController {
 
             //если у юзера еще нет рыцаря то создаем, иначе отправляем сообщение, что он есть
             if (!optionalKnight.isPresent()){
+                //получаемм данные о погоде
                 Map<String, Double> weatherMap = ControllerUtils.checkInfoOpenweathermap(
                         knight.getFromCity().replaceAll("\\d", "").toLowerCase());//убираем цифры из за api
+                //если данные есть, то создаем рыцаря
                 if (weatherMap != null && weatherMap.size() != 0){
                     //Knight knight = new Knight(name,user,fromCity);
                     knight.setOwner(user);
@@ -141,7 +118,7 @@ public class MyController {
 
                 }
                 else {
-                    model.addAttribute("message", "Что то не так с городом");
+                    model.addAttribute("message", "Введеный город не найден, попробуйте другой");
                     return "createKnight";
                 }
             }
@@ -149,19 +126,13 @@ public class MyController {
 
                 model.addAttribute("notExist", "У вас уже создан рыцарь");
             }
-
             //Iterable<Knight> allKnights =  knightRepository.findAll();
            // model.addAttribute("knight", knight);
-
         }
-
         System.out.println(user.getUsedCities());
         return "myknight";
 
     }
-
-
-
 
 
     @GetMapping("levelup")
@@ -187,22 +158,23 @@ public class MyController {
                                 @RequestParam long knight_id,
                                 Model model){
 
-
+        //проверка на действубщего рыцаря
         Optional<Knight> optionalKnight = knightRepository.findById(knight_id);
         if (optionalKnight.isPresent()){
             Knight knight = optionalKnight.get();
-
+            //проверка длины введеного города
             if (trainCity.length() < 3){
                 model.addAttribute("trainCityError", "Имя города должно состоять минимум из 3 букв");
                 model.addAttribute("knight", knight);
-            }
-            else  if (user.getUsedCities().contains(trainCity.toLowerCase())){
+            } //проверка на повторно введеные города
+            else  if (user.getUsedCities().contains(trainCity.replaceAll("\\d", "").toLowerCase())){
                 model.addAttribute("cityIsUsed","Вы уже тренировались в этом городе");
                 model.addAttribute("knight", knight);
             }
             else {
+                    //получаем данные о погоде в городе
                     Map<String, Double> weatherMap = ControllerUtils.checkInfoOpenweathermap(trainCity);
-
+                    //если такой город есть, то добавляем все данные и сохраняем, иначе ошибка
                     if (weatherMap.size() != 0){
 
                         knight.setHp(knight.getHp() + (weatherMap.get("pressure") / 10));
@@ -283,8 +255,9 @@ public class MyController {
         if (optionalKnight.isPresent()){
             Knight knight = optionalKnight.get();
 
+            //получаем данные о результатах боя
             Map<String, String> mapFightCheck = ControllerUtils.getKnightAndMosterFightCheck(monster, knight);
-
+            //если рыцарь победил, усиливаем монстра
             if (mapFightCheck.get("winner").equals("knight")){
 
                 knight.setKilledMonsters(knight.getKilledMonsters()+1);
@@ -293,9 +266,6 @@ public class MyController {
             model.mergeAttributes(mapFightCheck);
             model.addAttribute("knight", knight);
             model.addAttribute("monster", monster);
-
-
-
 
         }
         else {
@@ -316,6 +286,7 @@ public class MyController {
         for (Knight k: allKnights){
             list.add(k);
         }
+        //сортировка по количеству убитых монстров
         list.sort((o1, o2) -> o2.getKilledMonsters() - o1.getKilledMonsters());
 
 
@@ -332,6 +303,7 @@ public class MyController {
         knightRepository.deleteById(knight_id);
         userRepository.save(user);
         monsterService.resetMonster(user.getUser_monster());// удаляем текущего монстра и создаем нового
+
 
         model.addAttribute("notExist", "Ваш рыцарь удален.");
         return "myknight";
@@ -367,6 +339,20 @@ public class MyController {
 
 
 
+//    @PostMapping("/knights")
+//    public String addKnight(@RequestParam String name, @RequestParam int level, Map<String, Object> model){
+//        //Сначала сохраняем в БД
+//        Knight knight = new Knight(name,level);
+//        knightRepository.save(knight);
+//
+//
+//        //записываем в модель из репозитория и  отправляем в выдачу
+//        Iterable<Knight> allKnights =  knightRepository.findAll();
+//        model.put("knights", allKnights);
+//
+//
+//        return "knights";
+//    }
 
 
 }

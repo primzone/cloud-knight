@@ -6,7 +6,9 @@ import com.narek.spring.cloud_knight.repository.MonsterRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 @Service
 public class MonsterService {
@@ -47,4 +49,30 @@ public class MonsterService {
     }
 
 
+
+    class Solution {
+        public String truncateSentence(String s, int k) {
+
+            String[] strArr = s.split(" ");
+
+          //  List<String> list = Arrays.asList(s.split(" "));
+
+
+
+            StringBuilder otvet = new StringBuilder();
+            otvet.append(strArr[0]);
+            for (int i = 1; i < k ; i++) {
+                otvet.append(" ").append(strArr[i]);
+            }
+
+            return otvet.toString();
+
+        }
+    }
+
+
+
 }
+
+
+

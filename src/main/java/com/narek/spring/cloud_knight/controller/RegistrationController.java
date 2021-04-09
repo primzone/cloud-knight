@@ -4,6 +4,7 @@ import com.narek.spring.cloud_knight.entity.Role;
 import com.narek.spring.cloud_knight.entity.User;
 import com.narek.spring.cloud_knight.repository.UserRepository;
 import com.narek.spring.cloud_knight.service.MonsterService;
+import com.narek.spring.cloud_knight.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,9 +22,9 @@ import java.util.Set;
 public class RegistrationController {
 
     @Autowired
-    private UserRepository userRepository;
-    @Autowired
     private MonsterService monsterService;
+    @Autowired
+    private UserService userService;
 
 
     @GetMapping("/registration")
@@ -44,7 +45,9 @@ public class RegistrationController {
         }
 
 
-        User userFromDB = userRepository.findByUsername(user.getUsername());
+        //User userFromDB = userRepository.findByUsername(user.getUsername());
+        User userFromDB = userService.findByUsername(user.getUsername());
+
         if (userFromDB != null){
             model.addAttribute("message", "Такой пользователь уже существует!");
             return "registration";
@@ -52,11 +55,12 @@ public class RegistrationController {
 
         user.setActive(true);
         user.setRoles(Collections.singleton(Role.USER));
-        userRepository.save(user);
+       // userRepository.save(user);
+        userService.save(user);
         monsterService.createNewMonsterForUser(user);
 
-        model.addAttribute("message", "Аккаунт успешно создан");
-        return "redirect:/login";
+        model.addAttribute("userCreateMessage", "Аккаунт успешно создан, теперь войдите");
+        return "/homepage";
     }
 
 

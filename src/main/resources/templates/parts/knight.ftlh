@@ -13,8 +13,5 @@
         <li class="list-group-item"><b>Убито монстров: </b>${knight.killedMonsters}</li>
 
     </ul>
-    <div class="card-body">
-        <a href="#" class="card-link">Ссылка карточки</a>
-        <a href="#" class="card-link">Другая ссылка</a>
-    </div>
+
 </div>

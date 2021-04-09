@@ -84,10 +84,7 @@
 
 
                     </ul>
-                    <div class="card-body">
-                        <a href="#" class="card-link">Ссылка карточки</a>
-                        <a href="#" class="card-link">Другая ссылка</a>
-                    </div>
+
                 </div>
 
             </div>

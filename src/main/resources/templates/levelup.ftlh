@@ -22,7 +22,7 @@
 
 
                     <div class="mb-3">
-                        <label for="exampleInput1" class="form-label">В какой город отправиться рыцарь для прокачки?</label>
+                        <label for="exampleInput1" class="form-label"><h5>В какой город отправиться рыцарь для прокачки?</h5></label>
                         <input type="text" name="trainCity" class="form-control ${(trainCityError??)?string('is-invalid','')}"
                                 id="exampleInput1">
                         <#if trainCityError??>
@@ -72,25 +72,6 @@
                     </div>
                     </div>
 
-<#--                    <table class="table-success">-->
-<#--                        <thead>-->
-<#--                            <tr>-->
-
-<#--                                <th scope="col">Здоровье</th>-->
-<#--                                <th scope="col">Сила атаки</th>-->
-<#--                                <th scope="col">Защита</th>-->
-<#--                            </tr>-->
-<#--                        </thead>-->
-<#--                        <tbody>-->
-<#--                        <tr>-->
-
-<#--                            <td>${addHp}</td>-->
-<#--                            <td>${addStr}</td>-->
-<#--                            <td>${addDef}</td>-->
-<#--                        </tr>-->
-<#--                        </tbody>-->
-
-<#--                    </table>-->
 
 
 

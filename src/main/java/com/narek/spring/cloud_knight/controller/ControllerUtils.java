@@ -18,9 +18,9 @@ import java.util.stream.Collectors;
 
 public class ControllerUtils {
 
-
+    //проверка на валидацию
      static Map<String, String> getErrors(BindingResult bindingResult){
-
+        //добавялем к ключу Error для дальнейшей обработки
         Collector<FieldError, ?, Map<String, String>> collector = Collectors.toMap(
                 fieldError -> fieldError.getField() + "Error",
                 FieldError::getDefaultMessage
@@ -30,6 +30,7 @@ public class ControllerUtils {
     }
 
 
+    //получение данных о погоде в городе
     static Map<String, Double> checkInfoOpenweathermap(String cityName){
         ObjectMapper mapper = new ObjectMapper();
 
@@ -46,7 +47,7 @@ public class ControllerUtils {
 
         } catch (IOException e) {
             e.printStackTrace();
-            System.out.println("тоби пизда");
+
         }
 
 
@@ -63,10 +64,10 @@ public class ControllerUtils {
          zMonster.setHp(zMonster.getHp() - oneKnightHit);
          zKnight.setHp(zKnight.getHp() - oneMonstertHit);
 
-
     }
 
 
+    //получение результатого боя с монстром
     static Map<String, String> getKnightAndMosterFightCheck(Monster monster, Knight knight) {
 
          Monster zMonster = new Monster();
