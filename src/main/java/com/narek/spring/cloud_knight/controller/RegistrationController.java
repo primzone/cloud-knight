@@ -6,6 +6,7 @@ import com.narek.spring.cloud_knight.repository.UserRepository;
 import com.narek.spring.cloud_knight.service.MonsterService;
 import com.narek.spring.cloud_knight.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -25,7 +26,8 @@ public class RegistrationController {
     private MonsterService monsterService;
     @Autowired
     private UserService userService;
-
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @GetMapping("/registration")
     public String registration(){
@@ -55,6 +57,7 @@ public class RegistrationController {
 
         user.setActive(true);
         user.setRoles(Collections.singleton(Role.USER));
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
        // userRepository.save(user);
         userService.save(user);
         monsterService.createNewMonsterForUser(user);

@@ -21,10 +21,6 @@ import java.util.*;
 public class MyController {
 
     @Autowired
-    private KnightRepository knightRepository;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
     private MonsterService monsterService;
     @Autowired
     private KnightService knightService;
@@ -40,7 +36,7 @@ public class MyController {
     @GetMapping("/knights")
     public String showKnights(Model model){
 
-        Iterable<Knight> allKnights =  knightRepository.findAll();
+        Iterable<Knight> allKnights =  knightService.findAll();
         model.addAttribute("knights", allKnights);
         return "knights";
     }
